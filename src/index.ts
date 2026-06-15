@@ -1,14 +1,29 @@
-import { connectSpot } from "./ws/spot";
-import { connectFutures } from "./ws/futures";
-import { onSpotPrice, onFuturesPrice } from "./engine/streamEngine";
-import { config } from "./config";
+import { getSpotSymbols, getFuturesSymbols } from "./api/symbols";
+import { buildUniverse } from "./engine/universe";
+import { connectBatch } from "./ws/batch";
+import { onSpot, onFutures } from "./engine/scanner";
 
-console.log("Starting WS spread engine...");
+async function main() {
+  console.log("Loading universe...");
 
-connectSpot(config.symbol, (data) => {
-  onSpotPrice(data.price);
-});
+  const spot = await getSpotSymbols();
+  const fut = await getFuturesSymbols();
 
-connectFutures(config.symbol, (data) => {
-  onFuturesPrice(data.price);
-});
+  const universe = buildUniverse(spot, fut);
+
+  console.log("Pairs:", universe.length);
+
+  const chunkSize = 100;
+  const chunks: string[][] = [];
+
+  for (let i = 0; i < universe.length; i += chunkSize) {
+    chunks.push(universe.slice(i, i + chunkSize));
+  }
+
+  for (const chunk of chunks) {
+    connectBatch("spot", chunk, onSpot);
+    connectBatch("futures", chunk, onFutures);
+  }
+}
+
+main();
