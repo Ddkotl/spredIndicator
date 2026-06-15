@@ -33,7 +33,12 @@ export function connectBatch(
   });
 
   ws.on("error", console.error);
-  ws.on("close", () => console.log(`${type} WS closed`));
+  ws.on("close", (code, reason) => {
+  console.log(`${type} WS closed`, {
+    code,
+    reason: reason?.toString()
+  });
+});
 
   return ws;
 }

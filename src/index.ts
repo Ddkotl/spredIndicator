@@ -9,11 +9,11 @@ async function main() {
   const spot = await getSpotSymbols();
   const fut = await getFuturesSymbols();
 
-  const universe = buildUniverse(spot, fut);
+  const universe = buildUniverse(spot, fut).slice(0, 200);
 
   console.log("Pairs:", universe.length);
 
-  const chunkSize = 100;
+  const chunkSize = 20;
   const chunks: string[][] = [];
 
   for (let i = 0; i < universe.length; i += chunkSize) {
@@ -27,3 +27,5 @@ async function main() {
 }
 
 main();
+
+// проанализируй весь проект и сделай 2 файла, в первом опиши и обьясни всюархитектуру пакеты и код а также логику приложения детально, во втором напиши недостатки и дальнейшие шаги по развитию
